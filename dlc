@@ -1,12 +1,18 @@
 
 from flask import Flask, request
 import requests
+from dadjokes import dadjokes
 
 def get_weather():
-    params = {"access_key": "03f637409974d3bd297d1d269e4a87f8", "query": "Moscow"}
-    api_result = requests.get('http://api.weatherstack.com/current', params)
+    #params = {"access_key": "03f637409974d3bd297d1d269e4a87f8", "query": "Moscow"}
+    #api_result = requests.get('http://api.weatherstack.com/current', params)
+    api_result = requests.get('http://horoscope-api.herokuapp.com/horoscope/today/Gemini')#, headers={"Accept": "application/json"})
+    #api_result = requests.get('https://icanhazdadjoke.com/')
+
     api_response = api_result.json()
-    #print(api_response)
-    print("Сейчас в Москве "+ str(api_response['current']['temperature'] ) + " градусов")
+    print(api_response['horoscope'])
+    #print(api_response['current']['wind_speed'])
+    #print("Сейчас в Москве "+ str(api_response['current']['temperature'] ) + " градусов")
 
 get_weather()
+
