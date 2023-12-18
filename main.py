@@ -1,3 +1,5 @@
+import asyncio
+import requests
 import logging
 
 from aiogram import Bot, Dispatcher, executor, types
@@ -5,28 +7,11 @@ from random import randint
 from aiogram.types import Sticker
 from aiogram.utils.markdown import text, bold, italic, code, pre
 from aiogram.utils.emoji import emojize
-import asyncio
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-#from flask import Flask, request
-import requests
+# Кастомный модуль
+from weather_requests import get_weather, skl
 
-def skl(x) :
-    f1 = lambda a: (a%100)//10 != 1 and a%10 == 1
-    f2 = lambda a: (a%100)//10 != 1 and a%10 in [2,3,4]
-    return " градус" if f1(x) else  " градуса" if f2(x) else " градусов"
-
-
-def get_weather():
-    params = {"access_key": "03f637409974d3bd297d1d269e4a87f8", "query": "Moscow"}
-    api_result = requests.get('http://api.weatherstack.com/current', params)
-    api_response = api_result.json()
-    grad = api_response['current']['temperature']
-    send = []
-    send.append("Сейчас в Москве " + str(grad) + skl(abs(grad)) + ", cкорость ветра " + str(api_response['current']['wind_speed'])+" м/c")
-    send.append("Влажность " + str(api_response['current']['humidity']) +"%")
-    #send.append(api_response['current']['weather_icons'][0])
-    return send
 
 # Объект бота
 bot = Bot(token="1760292725:AAEp-FM34YAt8zMM59pnv73NeWvZm2kwAuE")
@@ -36,6 +21,7 @@ dp = Dispatcher(bot)
 sched = BlockingScheduler()
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
+
 
 @dp.message_handler(commands="start")
 async def cmd_start(message: types.Message):
@@ -72,7 +58,6 @@ async def star(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Что ты умеешь?")
 async def help(message: types.Message):
     await message.answer("  1) <b>'Привет Бот'</b> - поздороваться с ботом \n 2) <b>'Помоги с выбором одежды'</b> - на случай если нужен совет брать или не брать вешь\n 3) <b> 'Какая cейчас погода?' </b> - Погода в Москве на час\n 4) <b> 'Расскажи шутку' </b> - случайная батина сальная шутка на английском\n 5) <b> 'Гороскоп'</b> - гороскоп на сегодня с сУрьезного западного сайта", parse_mode=types.ParseMode.HTML)
-
 
 @dp.message_handler(lambda message: message.text == "Помоги с выбором одежды")
 async def random_swit(message: types.Message):
@@ -118,17 +103,10 @@ async def random_swit(message: types.Message):
     else:
         await message.answer("Вообше не идет" , parse_mode=types.ParseMode.HTML)
 
-#await message.reply("Так невкусно!", reply_markup=types.ReplyKeyboardRemove())
-
-# Хэндлер на команду работу в 9 утра беззвука
-# @sched.scheduled_job('cron', day_of_week='mon-fri', hour=17, minute=41 )
-# async def cmd_test1(message: types.Message):
-#     await message.reply("Test 1")
-
-
-#sched.configure(options_from_ini_file)
-executor.start_polling(dp, skip_updates=True)
-# sched.start()
-
-
-
+if __name__ == '__main__':
+    #Хэндлер на команду работу в 9 утра беззвука
+    @sched.scheduled_job('cron', day_of_week='mon-fri', hour=17, minute=41 )
+    
+    sched.configure(options_from_ini_file)
+    executor.start_polling(dp, skip_updates=True)
+    sched.start()
